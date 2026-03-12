@@ -1,11 +1,35 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { Recette } from '../../models/recette.model';
+import { RecetteService } from '../../services/recette.service'
 
 @Component({
   selector: 'app-recipe-manager-page',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './recipe-manager-page.html',
   styleUrl: './recipe-manager-page.css',
 })
-export class RecipeManagerPage {
+export class RecipeManagerPage implements OnInit {
+  public recettes: Recette[] = [];
 
+  constructor(private recetteService: RecetteService) { }
+
+  ngOnInit(): void {
+    this.loadRecettes();
+  }
+
+  loadRecettes(): void {
+    this.recetteService.getRecettes().subscribe({
+      next: (data) => this.recettes = data,
+      error: (err) => console.error("Erreur API", err)
+    });
+  }
+
+  deleteRecette(id: number): void {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette recette ?")) {
+      this.recetteService.deleteRecette(id).subscribe(() =>
+        this.loadRecettes()); // Recharger la liste après suppression
+    };
+  }
 }
