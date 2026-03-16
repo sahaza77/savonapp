@@ -49,14 +49,15 @@ export class RecipeManagerPage implements OnInit {
     const ctx = document.getElementById(`chart-${recette.id}`) as
       HTMLCanvasElement;
     if (!ctx) return;
-    
+    let listeCarNom= recette.resultats.filter(res => res.caracteristique.nom != 'Indice INS' && res.caracteristique.nom != 'Iode').map(res => res.caracteristique.nom);
+    let listeResultatScore= recette.resultats.filter(res => res.caracteristique.nom != 'Indice INS' && res.caracteristique.nom != 'Iode').map(res => res.score);
     new Chart(ctx, {
       type: 'radar',
       data: {
-        labels: recette.resultats.map(res => res.caracteristique.nom),
+        labels: listeCarNom,
         datasets: [{
           label: 'Scores',
-          data: recette.resultats.map(res => res.score),
+          data: listeResultatScore,
           fill: true,
           backgroundColor: 'rgba(210, 0, 255, 0.2)',
           borderColor: 'rgb(210, 0, 255)',

@@ -24,8 +24,15 @@
                             <span>Eau :</span>
                             <span class="fw-bold">{{ recette.apportEnEau }} g</span>
                         </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Indice INS :</span>
+                            <span class="fw-bold">{{ recette.resultats[1]?.score }} g</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Iode:</span>
+                            <span class="fw-bold">{{ recette.resultats[0]?.score }} g</span>
+                        </li>
                     </ul>
-
                     <!-- Affichage du graphe radar : -->
                     <div class="chart-container mb-3" style="position: relative; height:400px;">
                         <canvas [id]="'chart-' + recette.id"></canvas>
@@ -34,10 +41,8 @@
 
                 <div class="card-footer">
                     <div class="mt-4 d-flex justify-content-between mt-auto">
-                        <button class="btn btn-outline-primary btn-sm" 
-                        data-bs-toggle="modal"
-                        data-bs-target="#modalDetails" 
-                        (click)="ouvrirModale(recette)">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalDetails" (click)="ouvrirModale(recette)">
                             Détails
                         </button>
                         <button class="btn btn-outline-danger btn-sm" (click)="deleteRecette(recette.id)">
