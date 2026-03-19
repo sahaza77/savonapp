@@ -9,28 +9,33 @@ import { UsersManagerPage } from './pages/users-manager-page/users-manager-page'
 import { IngredientManagerPage } from './pages/ingredient-manager-page/ingredient-manager-page';
 import { AboutPage } from './pages/about-page/about-page';
 import { LegalNoticesPages } from './pages/legal-notices-pages/legal-notices-pages';
-
-
+import { authGuard } from './guards/auth-guard';
 
 
 export const routes: Routes = [
+    // Redirection de la racine vers la page d'accueil :
     { path: '', pathMatch: 'full', redirectTo: 'home' },
     { path: 'home', component: HomePage },
+    
     // Auth
     { path: 'login', component: LoginPage},
     { path: 'subscribe', component: SubscribePage },
+
     // Compte
-    { path: 'account', component: AccountManagerPage},
+    { path: 'account', component: AccountManagerPage, canActivate: [authGuard] },
+
     // Recettes
     { path: 'recipe-calculator', component: RecipeCalculatorPage },
-    { path: 'recipe-manager', component: RecipeManagerPage },
+    { path: 'recipe-manager', component: RecipeManagerPage, canActivate: [authGuard] },
+
     // Admin / gestion
-    { path: 'users-manager', component: UsersManagerPage },
-    { path: 'ingredients-manager', component: IngredientManagerPage },
+    { path: 'users-manager', component: UsersManagerPage, canActivate: [authGuard] },
+    { path: 'ingredients-manager', component: IngredientManagerPage, canActivate: [authGuard] },
+
     // Divers
     { path: 'about', component: AboutPage },
     { path: 'legal', component: LegalNoticesPages },
+
     // Fallback
     { path: '**', redirectTo: 'home' },
-
 ];

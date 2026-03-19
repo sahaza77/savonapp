@@ -1,11 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { UtilisateurService } from '../../services/utilisateur-service';
 
 @Component({
   selector: 'app-users-manager-page',
-  imports: [],
   templateUrl: './users-manager-page.html',
-  styleUrl: './users-manager-page.css',
 })
-export class UsersManagerPage {
+export class UsersManagerPage implements OnInit {
 
+  public users: any[] = [];
+
+  constructor(private userService: UtilisateurService) {}
+
+  ngOnInit(): void {
+    this.userService.getAllUsers().subscribe({
+      next: (data: any) => {
+        this.users = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
 }
