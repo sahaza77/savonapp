@@ -2,26 +2,26 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Ingredient } from '../../models/ingredient.model';
-import { LigneIngredient, Recette } from '../../models/recette.model';
-import { LigneIngredientDTO, RecetteFormDTO } from '../../models/dto.model';
+import { LigneIngredient, Recette, Resultat } from '../../models/recette.model';
+import { RecetteFormDTO } from '../../models/dto.model';
 import { IngredientService } from '../../services/ingredient.service';
 import { RecetteService } from '../../services/recette.service';
+import { AuthService } from '../../service/auth.service';
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-recipe-calculator-page',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './recipe-calculator-page.html',
   styleUrl: './recipe-calculator-page.css',
 })
 export class RecipeCalculatorPage implements OnInit {
-  // Affichage de la recette après son calcul :
   public recetteAffichee: Recette | null = null;
-  // Liste des ingrédients disponibles :
   public ingredientsDispo: Ingredient[] = [];
-  // Ingrédients sélectionnés :
   public choixIngredient: Ingredient | null = null;
   public selectionIngredients: LigneIngredient[] = [];
   public masseTotale = 0;
-  // Nouvelle recette :
+
   public nouvelleRecetteDTO: RecetteFormDTO = {
     id: null,
     titre: '',
@@ -30,81 +30,128 @@ export class RecipeCalculatorPage implements OnInit {
     avecSoude: false,
     concentrationAlcalin: 0,
     ligneIngredients: []
-  }
-  // Injection des services par le constructeur :
+  };
+
   constructor(
     private ingredientService: IngredientService,
-    private recetteService: RecetteService
+    private recetteService: RecetteService,
+    public authService: AuthService
   ) { }
-  // Initialisation : Récupération de la liste des ingrédients via l'API :
+
   ngOnInit(): void {
-    this.ingredientService.getIngredients().subscribe(data =>
-      this.ingredientsDispo = data);
-  }
-  /**
-  * Ajoute une ligne ingrédient à la recette
-  */
-  ajouterIngredient(): void {
-    // Refus des doublons :i
-    if (this.choixIngredient && this.selectionIngredients.find(l =>
-      l.ingredient.id === this.choixIngredient?.id)) {
-      return;
-    }
-    // Ajout de la ligneIngredient :
-    this.selectionIngredients.push({
-      ingredient: this.choixIngredient!,
-      quantite: 0,
-      pourcentage: 0
-    })
-    // Optionnel : Réinitialiser le menu déroulant après l'ajout
-    this.choixIngredient = null;
-  }
-  /**
-  * Recalcule les pourcentages
-  */
-  recalculerPourcentages(): void {
-    this.masseTotale = this.selectionIngredients.reduce((acc, ligne) => acc +
-      ligne.quantite, 0); // Somme des masse des ingrédients de la recette
-    this.selectionIngredients.forEach(ligne => {
-      ligne.pourcentage = this.masseTotale > 0 ? + (ligne.quantite /
-        this.masseTotale * 100).toFixed(0) : 0; // Calcul les pourcentages des ingrédients
+    this.ingredientService.getIngredients().subscribe(data => {
+      this.ingredientsDispo = data;
     });
   }
-  /**
-  * Supprime un ingrédient préalablement choisi pour la recette en cours
-  * @param index
-  */
+
+  ajouterIngredient(): void {
+    if (
+      this.choixIngredient &&
+      this.selectionIngredients.find(l => l.ingredient.id === this.choixIngredient?.id)
+    ) {
+      return;
+    }
+
+    if (this.choixIngredient) {
+      this.selectionIngredients.push({
+        ingredient: this.choixIngredient,
+        quantite: 0,
+        pourcentage: 0
+      });
+    }
+
+    this.choixIngredient = null;
+    this.recalculerPourcentages();
+  }
+
+  recalculerPourcentages(): void {
+    this.masseTotale = this.selectionIngredients.reduce(
+      (acc, ligne) => acc + ligne.quantite,
+      0
+    );
+
+    this.selectionIngredients.forEach(ligne => {
+      ligne.pourcentage = this.masseTotale > 0
+        ? +(ligne.quantite / this.masseTotale * 100).toFixed(0)
+        : 0;
+    });
+  }
+
   supprimerIngredient(index: number): void {
     this.selectionIngredients.splice(index, 1);
+    this.recalculerPourcentages();
   }
-  /**
-  * Méthode de soumission du nouvel ingrédient
-  */
-  onSubmit(): void {
-    // 1. Associer les ingrédients à ligneIngredientDTO :
+
+  private construireRecetteDTO(): RecetteFormDTO {
     const ligneIngredientDTOs = this.selectionIngredients.map(ligne => ({
       quantite: ligne.quantite,
       pourcentage: ligne.pourcentage,
       ingredientId: ligne.ingredient?.id ?? 0
     }));
-    //console.log(`LigneIngredientDTOs = `, ligneIngredientDTOs);
-    // 2. Finalisation de l'objet RecetteFormDTO :
-    const recetteEnvoyee: RecetteFormDTO = {
+
+    return {
       ...this.nouvelleRecetteDTO,
       ligneIngredients: ligneIngredientDTOs
     };
-    // console.log('Objet RecetteDTO prêt à envoyer :', recetteEnvoyee);
-    // 3. Envoi de la recette à l'API via le service recette :
+  }
+
+  onSubmit(): void {
+    if (this.selectionIngredients.length === 0) {
+      alert('Ajoutez au moins un ingrédient.');
+      return;
+    }
+
+    this.recalculerPourcentages();
+    this.calculerRecetteLocalement();
+  }
+
+  calculerRecetteLocalement(): void {
+    const surgraissage = this.nouvelleRecetteDTO.surgraissage || 0;
+    const concentration = this.nouvelleRecetteDTO.concentrationAlcalin || 0;
+
+    let qteAlcalin = 0;
+
+    this.selectionIngredients.forEach(ligne => {
+      const indiceSapo = ligne.ingredient?.sapo ?? 0;
+      qteAlcalin += ligne.quantite * indiceSapo;
+    });
+
+    qteAlcalin = qteAlcalin * (1 - surgraissage / 100);
+
+    let apportEnEau = 0;
+    if (concentration > 0 && concentration < 100) {
+      apportEnEau = qteAlcalin * ((100 - concentration) / concentration);
+    }
+
+    this.recetteAffichee = {
+      id: 0,
+      titre: this.nouvelleRecetteDTO.titre,
+      description: this.nouvelleRecetteDTO.description,
+      surgraissage: this.nouvelleRecetteDTO.surgraissage,
+      avecSoude: this.nouvelleRecetteDTO.avecSoude,
+      concentrationAlcalin: this.nouvelleRecetteDTO.concentrationAlcalin,
+      apportEnEau: +apportEnEau.toFixed(2),
+      qteAlcalin: +qteAlcalin.toFixed(2),
+      ligneIngredients: this.selectionIngredients,
+      resultats: [] as Resultat[]
+    };
+  }
+
+  enregistrerRecette(): void {
+    if (!this.authService.isAuthenticated()) {
+      alert('Vous devez être connecté pour enregistrer une recette.');
+      return;
+    }
+
+    const recetteEnvoyee = this.construireRecetteDTO();
+
     this.recetteService.createRecette(recetteEnvoyee).subscribe({
       next: (recette: Recette) => {
-        this.recetteAffichee = recette; // On récupère la recette avec les scores
-
-        alert("Recette calculée et enregistrée avec succès !"); // Message succès
-        // console.log('Recette reçue du backend :', recette);
+        this.recetteAffichee = recette;
+        alert('Recette enregistrée avec succès !');
       },
-      error: (err) => {
-        alert("Erreur lors du calcul. Vérifier vos données."); // Message échec
-        // console.error('Erreur lors de la création de la recette :', err);
+      error: () => {
+        alert("Erreur lors de l'enregistrement de la recette.");
       }
     });
   }

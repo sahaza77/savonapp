@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 })
 export class UtilisateurService {
 
-  private API_URL = "http://localhost:8080/users";
+  private API_URL = "http://localhost:8080/api-savon/v1/utilisateur";
 
   constructor(private http: HttpClient) {}
 
