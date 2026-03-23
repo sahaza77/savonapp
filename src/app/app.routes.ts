@@ -10,6 +10,7 @@ import { IngredientManagerPage } from './pages/ingredient-manager-page/ingredien
 import { AboutPage } from './pages/about-page/about-page';
 import { LegalNoticesPages } from './pages/legal-notices-pages/legal-notices-pages';
 import { authGuard } from './guards/auth-guard';
+import { AdminRecipesPage } from './pages/admin-recipes-page/admin-recipes-page';
 
 
 export const routes: Routes = [
@@ -31,6 +32,7 @@ export const routes: Routes = [
     // Admin / gestion
     { path: 'users-manager', component: UsersManagerPage, canActivate: [authGuard] },
     { path: 'ingredients-manager', component: IngredientManagerPage, canActivate: [authGuard] },
+    { path: 'admin-recipes', component: AdminRecipesPage, canActivate: [authGuard] },
 
     // Divers
     { path: 'about', component: AboutPage },

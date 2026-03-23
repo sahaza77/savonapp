@@ -25,7 +25,7 @@
                     </a>
                 </li>
                 <!-- Accès aux recettes de l'utilisateur -->
-                 @if (authService.isAuthenticated()) {
+                @if (authService.isAuthenticated()) {
                 <li class="nav-item">
                     <a class="nav-link" routerLink="recipe-manager" routerLinkActive="active" title="Gérer mes recettes (retrouver ,modifier,
 supprimer...)">
@@ -33,10 +33,10 @@ supprimer...)">
                         Mes recettes
                     </a>
                 </li>
-            }
+                }
 
                 <!-- Accès gestion des utilisateurs pour l'administrateur -->
-                 @if (authService.hasRole('ROLE_ADMIN')) {
+                @if (authService.hasRole('ROLE_ADMIN')) {
                 <li class="nav-item admin-only">
                     <a class="nav-link" routerLink="users-manager" routerLinkActive="active"
                         title="Gérer les utilisateurs">
@@ -44,10 +44,10 @@ supprimer...)">
                         Utilisateurs
                     </a>
                 </li>
-            }
+                }
 
                 <!-- Accès gestion des ingrédients pour l'administrateur -->
-                 @if (authService.hasRole('ROLE_ADMIN')) {
+                @if (authService.hasRole('ROLE_ADMIN')) {
                 <li class="nav-item admin-only">
                     <a class="nav-link" routerLink="ingredients-manager" routerLinkActive="active" title="Gérer les ingrédients (corps gras et agents
 alcalins)">
@@ -55,7 +55,16 @@ alcalins)">
                         Ingrédients
                     </a>
                 </li>
-            }
+                }
+                @if (authService.hasRole('ROLE_ADMIN')) {
+                <li class="nav-item admin-only">
+                    <a class="nav-link" routerLink="admin-recipes" routerLinkActive="active"
+                        title="Gérer toutes les recettes">
+                        <i class="bi bi-journal-richtext"></i>
+                        Recettes
+                    </a>
+                </li>
+                }
             </ul>
         </div>
     </div>

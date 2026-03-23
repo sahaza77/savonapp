@@ -1,0 +1,72 @@
+<div class="container">
+
+    <h2 class="mb-4 text-danger">Gestion des recettes (ADMIN)</h2>
+
+    <div class="row">
+        @for (recette of recettes; track recette.id) {
+        <div class="col-md-4 mb-4">
+
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+
+                    <h5 class="card-title text-primary">
+                        {{ recette.titre }}
+                    </h5>
+
+                    <p class="card-text text-truncate">
+                        {{ recette.description }}
+                    </p>
+
+                    <ul class="list-group list-group-flush mb-3">
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Surgraissage :</span>
+                            <span class="badge bg-info text-dark">
+                                {{ recette.surgraissage }}%
+                            </span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Alcalin :</span>
+                            <span>
+                                {{ recette.avecSoude ? 'Soude (NaOH)' : 'Potasse (KOH)' }}
+                            </span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Eau :</span>
+                            <span class="fw-bold">
+                                {{ recette.apportEnEau }} g
+                            </span>
+                        </li>
+
+                    </ul>
+
+                    <div class="chart-container mb-3" style="height:300px;">
+                        <canvas [id]="'chart-' + recette.id"></canvas>
+                    </div>
+
+                </div>
+
+                <div class="card-footer d-flex justify-content-between">
+
+                    <button class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalDetails"
+                        (click)="ouvrirModale(recette)">
+                        Détails
+                    </button>
+
+                    <button class="btn btn-outline-danger btn-sm"
+                        (click)="deleteRecette(recette.id)">
+                        Supprimer
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+        }
+    </div>
+
+</div>
